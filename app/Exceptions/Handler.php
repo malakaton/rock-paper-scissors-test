@@ -40,6 +40,25 @@ class Handler extends ExceptionHandler
     }
 
     /**
+     * Add the exception class name, message and stack trace to response
+     *
+     * @param \Exception $exception
+     * @return array
+     */
+    private function getExtraInfo(Exception $exception) : array
+    {
+        return (config('app.debug') || config('app.env') === 'local')
+            ?   [
+                'meta' => [
+                    'message' => $exception->getMessage(),
+                    'file' => $exception->getFile() . ' at line: ' . $exception->getLine(),
+                    'exception' => get_class($exception),
+                ],
+            ]
+            : [];
+    }
+
+    /**
      * Render an exception into an HTTP response.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -50,6 +69,12 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
-        return parent::render($request, $exception);
+        $extraInfo = $this->getExtraInfo($exception);
+        $handlerFactory = new HandlerFactory();
+        $handlerException = $handlerFactory->initialize($exception);
+
+        return $handlerException
+            ? $handlerException->render($this, $exception, $extraInfo)
+            : parent::render($request, $exception);
     }
 }

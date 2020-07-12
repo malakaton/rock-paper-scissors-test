@@ -108,7 +108,7 @@
         e.preventDefault();
 
         $.ajax({
-            type:'POST',
+            type:'GET',
             url: '/api/rock-paper-scissors/play',
             dataType: "json",
             data:{},

@@ -17,6 +17,6 @@ Route::group([
      'prefix' => 'rock-paper-scissors',
      'namespace'     => 'App\RockPaperScissors\UI\Api\Controllers\Components'
      ], static function () {
-        Route::post('/play', 'GameController@play')->name('rock-paper-scissors.play');
+        Route::get('/play', 'GameController@play')->name('rock-paper-scissors.play');
     }
 );

@@ -2,10 +2,12 @@
 
 namespace App\RockPaperScissors\Domain\Services\Components\Game;
 
+use App\RockPaperScissors\Domain\Exceptions\CustomExceptions\InvalidArgumentException;
 use App\RockPaperScissors\Domain\Models\Components\Roles\RoleType;
 use App\RockPaperScissors\Domain\Repositories\Components\Game\Roles\RolesRepository;
+use Illuminate\Http\Response;
 
-class GameResolver
+class GameResolverService
 {
     protected const NUM_GAMES = 100;
 
@@ -15,11 +17,11 @@ class GameResolver
     protected $numGameWinsSecondPlayer = 0;
     protected $numGameDraws = 0;
 
-    public function __construct()
+    public function __construct(RolesRepository $rolesRepository, int $numMatches = self::NUM_GAMES)
     {
-        $this->rolesRepository = new RolesRepository();
+        $this->rolesRepository = $rolesRepository;
 
-        for ($i = 0; $i < self::NUM_GAMES; $i++)
+        for ($i = 0; $i < $numMatches; $i++)
         {
             $this->playersOnGames[] = [
                 'firstPlayer' => RoleType::ROCK,
@@ -29,6 +31,11 @@ class GameResolver
 
     }
 
+    /**
+     * Build statistics of the matches played
+     *
+     * @return array|array[]
+     */
     public function resolve(): array
     {
         foreach ($this->playersOnGames as $playersGame) {
@@ -59,16 +66,27 @@ class GameResolver
      */
     protected function whoWins(array $playersGame): void
     {
-        if ($playersGame['firstPlayer'] === (($playersGame['secondPlayer'] +1)%$this->rolesRepository->getTotalNumRoles())) {
-            $this->numGameWinsFirstPlayer++;
-        }
+        try {
+            if ($playersGame['firstPlayer'] === (($playersGame['secondPlayer'] + 1) % $this->rolesRepository->getTotalNumRoles(
+                    ))) {
+                $this->numGameWinsFirstPlayer++;
+            }
 
-        if ($playersGame['secondPlayer']  === (($playersGame['firstPlayer'] +1)%$this->rolesRepository->getTotalNumRoles())) {
-            $this->numGameWinsSecondPlayer++;
-        }
+            if ($playersGame['secondPlayer'] === (($playersGame['firstPlayer'] + 1) % $this->rolesRepository->getTotalNumRoles(
+                    ))) {
+                $this->numGameWinsSecondPlayer++;
+            }
 
-        if ($playersGame['firstPlayer']  === RoleType::ROCK && $playersGame['secondPlayer']  === RoleType::ROCK) {
-            $this->numGameDraws++;
+            if ($playersGame['firstPlayer'] === RoleType::ROCK && $playersGame['secondPlayer'] === RoleType::ROCK) {
+                $this->numGameDraws++;
+            }
+        }
+        catch (\Exception | \DivisionByZeroError $e)
+        {
+            throw new InvalidArgumentException(
+                Response::HTTP_BAD_REQUEST,
+                __('validation.custom.undefined-player')
+            );
         }
     }
 }

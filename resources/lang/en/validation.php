@@ -133,6 +133,7 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'undefined-player' => 'Undefined players on game'
     ],
 
     /*
