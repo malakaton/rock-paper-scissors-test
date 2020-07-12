@@ -24,5 +24,5 @@ Finally, execute the command php artisan serve and go to this follow url: http:/
 ## Code coverage
 
 Also you can see a link to show a report of the code coverage done by unit test.
-For rebuild code coverage, excecute the follow command: 
+For rebuild code coverage, excecute the following command: 
 `'vendor/bin/phpunit --coverage-html public/reports/'`
